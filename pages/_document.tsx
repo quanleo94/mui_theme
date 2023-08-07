@@ -1,62 +1,43 @@
-// pages/_document.tsx
-import Document, {
-  Html,
-  Head,
-  Main,
-  NextScript,
-  DocumentProps,
-  DocumentContext,
-} from "next/document";
-import { AppType } from "next/app";
-import { MyAppProps } from "./_app";
-import createEmotionCache from "../utils/createEmotionCache";
+import * as React from "react";
+import Document, { Html, Head, Main, NextScript } from "next/document";
 import createEmotionServer from "@emotion/server/create-instance";
+import createEmotionCache from "@/utils/createEmotionCache";
 
-interface MyDocumentProps extends DocumentProps {
-  emotionStyleTags: JSX.Element[];
+export default class MyDocument extends Document {
+  render() {
+    return (
+      <Html lang="en">
+        <Head>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+          />
+        </Head>
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    );
+  }
 }
 
-export default function MyDocument({ emotionStyleTags }: MyDocumentProps) {
-  return (
-    <Html lang="en">
-      <Head>
-        <link rel="shortcut icon" href="/favicon.ico" />
-        {/* Insertion point for client. This connects with createEmotionCache.ts */}
-        <meta name="emotion-insertion-point" content="" />
-        {emotionStyleTags}
-      </Head>
-      <body>
-        <Main />
-        <NextScript />
-      </body>
-    </Html>
-  );
-}
-
-// `getInitialProps` belongs to `_document` (instead of `_app`),
-// it's compatible with static-site generation (SSG).
-MyDocument.getInitialProps = async (ctx: DocumentContext) => {
+MyDocument.getInitialProps = async (ctx) => {
   const originalRenderPage = ctx.renderPage;
 
-  // You can consider sharing the same Emotion cache between all the SSR requests to speed up performance.
-  // However, be aware that it can have global side effects.
   const cache = createEmotionCache();
   const { extractCriticalToChunks } = createEmotionServer(cache);
 
-  // We're passing `emotionCache` to App component
+  /* eslint-disable */
   ctx.renderPage = () =>
     originalRenderPage({
-      enhanceApp: (
-        App: React.ComponentType<React.ComponentProps<AppType> & MyAppProps>
-      ) =>
-        function EnhanceApp(props) {
-          return <App emotionCache={cache} {...props} />;
-        },
+      enhanceApp: (App: any) => (props) =>
+        <App emotionCache={cache} {...props} />,
     });
+  /* eslint-enable */
 
   const initialProps = await Document.getInitialProps(ctx);
-  // This is important. It prevents Emotion to render invalid HTML.
-  // See https://github.com/mui/material-ui/issues/26561#issuecomment-855286153
+
   const emotionStyles = extractCriticalToChunks(initialProps.html);
   const emotionStyleTags = emotionStyles.styles.map((style) => (
     <style
@@ -69,9 +50,10 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
 
   return {
     ...initialProps,
-    // return emotionStyleTags as props
-    emotionStyleTags,
+    // Styles fragment is rendered after the app and page rendering finish.
+    styles: [
+      ...React.Children.toArray(initialProps.styles),
+      ...emotionStyleTags,
+    ],
   };
 };
-
-//Refer doc : https://reacthustle.com/blog/how-to-setup-mui-with-nextjs-emotion-and-typescript
