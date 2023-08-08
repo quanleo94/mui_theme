@@ -5,9 +5,9 @@ export type Menu = {
 };
 
 export type MenuItem = {
-  id: string;
+  id: string | number;
   title: string;
   url: string;
-  icon: string;
-  breadcrumbs: boolean;
+  icon: any;
+  breadcrumbs?: boolean;
 };

@@ -19,9 +19,9 @@ const account: Menu = {
       breadcrumbs: false,
     },
     {
-      id: "password",
-      title: "Password",
-      url: "/password",
+      id: "settings",
+      title: "Settings",
+      url: "/settings",
       icon: icons.IconKey,
       breadcrumbs: false,
     },

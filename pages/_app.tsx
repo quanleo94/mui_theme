@@ -23,7 +23,7 @@ export default function App(props: MyAppProps) {
   return (
     <StyledEngineProvider injectFirst>
       <CacheProvider value={emotionCache}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme()}>
           <RecoilRoot>{layout(<Component {...pageProps} />)}</RecoilRoot>
         </ThemeProvider>
       </CacheProvider>
